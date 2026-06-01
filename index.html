@@ -1,35 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>实时回收价</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    max-width:500px;
+    margin:20px auto;
+    padding:10px;
+}
+
+h2{
+    text-align:center;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+td{
+    border:1px solid #ddd;
+    padding:12px;
+    font-size:18px;
+}
+
+td:last-child{
+    text-align:right;
+}
+
+button{
+    width:100%;
+    margin-top:15px;
+    padding:12px;
+    font-size:16px;
+}
+
+#status{
+    text-align:center;
+    margin-top:10px;
+    color:#666;
+}
+
+#time{
+    text-align:center;
+    margin-top:10px;
+    color:#666;
+}
+</style>
+</head>
+<body>
+
+<h2>实时回收价</h2>
+
+<table>
+<tr><td>黄金</td><td id="gold">--</td></tr>
+<tr><td>Au999</td><td id="au999">--</td></tr>
+<tr><td>18K</td><td id="k18">--</td></tr>
+
+<tr><td>白银</td><td id="silver">--</td></tr>
+<tr><td>Ag999</td><td id="ag999">--</td></tr>
+
+<tr><td>铂金</td><td id="pt">--</td></tr>
+<tr><td>Pt950</td><td id="pt950">--</td></tr>
+
+<tr><td>钯金</td><td id="palladium">--</td></tr>
+<tr><td>Pd990</td><td id="pd990">--</td></tr>
+</table>
+
+<div id="time">--</div>
+
+<div id="status">连接中...</div>
+
+<button onclick="location.reload()">刷新</button>
+
+<script>
+
 let ws;
 
 function connectWS(){
 
+    if(ws) ws.close();
+
     ws = new WebSocket("wss://ws.wwog.qzz.io");
 
-    ws.onmessage = e => {
+    ws.onopen = () => {
+        document.getElementById("status").textContent = "已连接";
+    };
+
+    ws.onmessage = (e) => {
 
         const d = JSON.parse(e.data);
 
-        const g = Number(d["黄金"]||0);
-        const s = Number(d["白银"]||0);
-        const p = Number(d["铂金"]||0);
-        const pd = Number(d["钯金"]||0);
+        const g  = Number(d["黄金"] || 0);
+        const s  = Number(d["白银"] || 0);
+        const pt = Number(d["铂金"] || 0);
+        const pd = Number(d["钯金"] || 0);
 
-        gold.textContent  = g.toFixed(2);
-        au999.textContent = (g*0.999).toFixed(2);
-        k18.textContent   = (g*0.7475).toFixed(2);
+        document.getElementById("gold").textContent = g.toFixed(2);
+        document.getElementById("au999").textContent = (g * 0.999).toFixed(2);
+        document.getElementById("k18").textContent = (g * 0.7475).toFixed(2);
 
-        silver.textContent = s.toFixed(2);
-        ag999.textContent  = (s*0.999).toFixed(2);
+        document.getElementById("silver").textContent = s.toFixed(2);
+        document.getElementById("ag999").textContent = (s * 0.999).toFixed(2);
 
-        pt.textContent    = p.toFixed(2);
-        pt950.textContent = (p*0.942).toFixed(2);
+        document.getElementById("pt").textContent = pt.toFixed(2);
+        document.getElementById("pt950").textContent = (pt * 0.942).toFixed(2);
 
-        palladium.textContent = pd.toFixed(2);
-        pd990.textContent     = (pd*0.95).toFixed(2);
+        document.getElementById("palladium").textContent = pd.toFixed(2);
+        document.getElementById("pd990").textContent = (pd * 0.95).toFixed(2);
+
+        if(d["时间"]){
+            document.getElementById("time").textContent = d["时间"];
+        }
     };
 
-    ws.onclose = ()=>{
+    ws.onclose = () => {
+        document.getElementById("status").textContent = "重连中...";
         setTimeout(connectWS,2000);
+    };
+
+    ws.onerror = () => {
+        document.getElementById("status").textContent = "连接异常";
     };
 }
 
 connectWS();
+
+</script>
+
+</body>
+</html>
