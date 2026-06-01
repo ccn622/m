@@ -1,0 +1,35 @@
+let ws;
+
+function connectWS(){
+
+    ws = new WebSocket("wss://ws.wwog.qzz.io");
+
+    ws.onmessage = e => {
+
+        const d = JSON.parse(e.data);
+
+        const g = Number(d["黄金"]||0);
+        const s = Number(d["白银"]||0);
+        const p = Number(d["铂金"]||0);
+        const pd = Number(d["钯金"]||0);
+
+        gold.textContent  = g.toFixed(2);
+        au999.textContent = (g*0.999).toFixed(2);
+        k18.textContent   = (g*0.7475).toFixed(2);
+
+        silver.textContent = s.toFixed(2);
+        ag999.textContent  = (s*0.999).toFixed(2);
+
+        pt.textContent    = p.toFixed(2);
+        pt950.textContent = (p*0.942).toFixed(2);
+
+        palladium.textContent = pd.toFixed(2);
+        pd990.textContent     = (pd*0.95).toFixed(2);
+    };
+
+    ws.onclose = ()=>{
+        setTimeout(connectWS,2000);
+    };
+}
+
+connectWS();
